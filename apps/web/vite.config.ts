@@ -5,13 +5,13 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-	plugins: [
-		tsconfigPaths(),
-		tailwindcss(),
-		// Please make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
-		tanstackStart({
-			customViteReactPlugin: true,
-		}),
-		viteReact(),
-	],
+  plugins: [
+    tsconfigPaths(),
+    tailwindcss(),
+    // Please make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
+    tanstackStart({
+      customViteReactPlugin: true,
+    }),
+    viteReact(),
+  ],
 });
