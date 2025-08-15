@@ -1,0 +1,66 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "bun: debug server",
+      "type": "bun",
+      "request": "launch",
+
+      // The path to a JavaScript or TypeScript file to run.
+      "program": "src/index.ts",
+
+      // The working directory of the program.
+      "cwd": "${workspaceFolder}/apps/server",
+
+      // If the environment variables should not be inherited from the parent process.
+      "strictEnv": false,
+
+      // If the program should be run in watch mode.
+      // This is equivalent to passing `--watch` to the `bun` executable.
+      // You can also set this to "hot" to enable hot reloading using `--hot`.
+      "watchMode": false,
+
+      // If the debugger should stop on the first line of the program.
+      "stopOnEntry": false,
+
+      // If the debugger should be disabled. (for example, breakpoints will not be hit)
+      "noDebug": false,
+
+      // The path to the `bun` executable, defaults to your `PATH` environment variable.
+      "runtime": "bun",
+
+      // The arguments to pass to the `bun` executable, if any.
+      // Unlike `args`, these are passed to the executable itself, not the program.
+      "runtimeArgs": ["--hot", "--inspect=ws://localhost:6499/fem3bpmd84r"]
+    },
+    {
+      "name": "bun: attach server",
+      "type": "bun",
+      "request": "attach",
+      "url": "ws://localhost:6499/fem3bpmd84r"
+    },
+    {
+      "name": "bun: debug web",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "bun run dev:web"
+    },
+    {
+      "name": "bun: attach chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3001"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "bun: debug app",
+      "configurations": [
+        "bun: debug server",
+        "bun: debug web",
+        "bun: attach chrome"
+      ],
+      "stopAll": true
+    }
+  ]
+}
