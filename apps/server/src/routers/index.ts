@@ -1,9 +1,9 @@
 import type { RouterClient } from "@orpc/server";
 import { checkDbConnection } from "@/db";
-import { protectedProcedure, publicProcedure } from "../lib/orpc";
+import { Procedures } from "../lib/orpc";
 
 export const appRouter = {
-  healthCheck: publicProcedure.handler(async () => {
+  healthCheck: Procedures.public.handler(async () => {
     const isDbConnected = await checkDbConnection();
 
     return {
@@ -14,10 +14,10 @@ export const appRouter = {
       timestamp: new Date().toISOString(),
     };
   }),
-  privateData: protectedProcedure.handler(({ context }) => {
+  privateData: Procedures.protected.handler(({ context }) => {
     return {
       message: "This is private",
-      user: context.session?.user,
+      user: context.auth?.user,
     };
   }),
 };
