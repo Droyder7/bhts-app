@@ -1,7 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
 import {
   createRootRouteWithContext,
   HeadContent,
@@ -12,12 +11,15 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import Loader from "@/components/loader";
 import { Toaster } from "@/components/ui/sonner";
+import type { AuthContextType } from "@/lib/auth-client";
 import type { orpc } from "@/utils/orpc";
 import Header from "../components/header";
 import appCss from "../index.css?url";
+
 export interface RouterAppContext {
   orpc: typeof orpc;
   queryClient: QueryClient;
+  auth: AuthContextType;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
