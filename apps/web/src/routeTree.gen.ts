@@ -14,6 +14,10 @@ import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as ProtectedMemberRouteRouteImport } from './routes/_protected/member/route'
+import { Route as ProtectedAdminRouteRouteImport } from './routes/_protected/admin/route'
+import { Route as ProtectedMemberIndexRouteImport } from './routes/_protected/member/index'
+import { Route as ProtectedAdminIndexRouteImport } from './routes/_protected/admin/index'
 
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
@@ -38,37 +42,78 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const ProtectedMemberRouteRoute = ProtectedMemberRouteRouteImport.update({
+  id: '/member',
+  path: '/member',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedAdminRouteRoute = ProtectedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedMemberIndexRoute = ProtectedMemberIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedMemberRouteRoute,
+} as any)
+const ProtectedAdminIndexRoute = ProtectedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof ProtectedAdminRouteRouteWithChildren
+  '/member': typeof ProtectedMemberRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin/': typeof ProtectedAdminIndexRoute
+  '/member/': typeof ProtectedMemberIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/admin': typeof ProtectedAdminIndexRoute
+  '/member': typeof ProtectedMemberIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_protected': typeof ProtectedRouteRouteWithChildren
+  '/_protected/admin': typeof ProtectedAdminRouteRouteWithChildren
+  '/_protected/member': typeof ProtectedMemberRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/admin/': typeof ProtectedAdminIndexRoute
+  '/_protected/member/': typeof ProtectedMemberIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/member'
+    | '/login'
+    | '/dashboard'
+    | '/admin/'
+    | '/member/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard'
+  to: '/' | '/login' | '/dashboard' | '/admin' | '/member'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_protected'
+    | '/_protected/admin'
+    | '/_protected/member'
     | '/_auth/login'
     | '/_protected/dashboard'
+    | '/_protected/admin/'
+    | '/_protected/member/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -114,6 +159,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_protected/member': {
+      id: '/_protected/member'
+      path: '/member'
+      fullPath: '/member'
+      preLoaderRoute: typeof ProtectedMemberRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/admin': {
+      id: '/_protected/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof ProtectedAdminRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/member/': {
+      id: '/_protected/member/'
+      path: '/'
+      fullPath: '/member/'
+      preLoaderRoute: typeof ProtectedMemberIndexRouteImport
+      parentRoute: typeof ProtectedMemberRouteRoute
+    }
+    '/_protected/admin/': {
+      id: '/_protected/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof ProtectedAdminIndexRouteImport
+      parentRoute: typeof ProtectedAdminRouteRoute
+    }
   }
 }
 
@@ -129,11 +202,37 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
+interface ProtectedAdminRouteRouteChildren {
+  ProtectedAdminIndexRoute: typeof ProtectedAdminIndexRoute
+}
+
+const ProtectedAdminRouteRouteChildren: ProtectedAdminRouteRouteChildren = {
+  ProtectedAdminIndexRoute: ProtectedAdminIndexRoute,
+}
+
+const ProtectedAdminRouteRouteWithChildren =
+  ProtectedAdminRouteRoute._addFileChildren(ProtectedAdminRouteRouteChildren)
+
+interface ProtectedMemberRouteRouteChildren {
+  ProtectedMemberIndexRoute: typeof ProtectedMemberIndexRoute
+}
+
+const ProtectedMemberRouteRouteChildren: ProtectedMemberRouteRouteChildren = {
+  ProtectedMemberIndexRoute: ProtectedMemberIndexRoute,
+}
+
+const ProtectedMemberRouteRouteWithChildren =
+  ProtectedMemberRouteRoute._addFileChildren(ProtectedMemberRouteRouteChildren)
+
 interface ProtectedRouteRouteChildren {
+  ProtectedAdminRouteRoute: typeof ProtectedAdminRouteRouteWithChildren
+  ProtectedMemberRouteRoute: typeof ProtectedMemberRouteRouteWithChildren
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedAdminRouteRoute: ProtectedAdminRouteRouteWithChildren,
+  ProtectedMemberRouteRoute: ProtectedMemberRouteRouteWithChildren,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
 }
 

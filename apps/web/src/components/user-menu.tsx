@@ -36,6 +36,7 @@ export default function UserMenu() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+        <DropdownMenuItem>{session.user.role}</DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Button
             variant="destructive"
