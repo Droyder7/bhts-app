@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { phoneNumber } from "better-auth/plugins";
 import z from "zod";
 import { ROLES } from "@/lib/types";
 import { db } from "../db";
@@ -14,6 +15,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  plugins: [
+    phoneNumber({
+      sendOTP: ({ phoneNumber, code }, request) => {
+        // TODO: Implement sending OTP code via SMS
+        console.log(`Sending OTP code ${code} to ${phoneNumber}`, request);
+      },
+      signUpOnVerification: {
+        getTempEmail: (phoneNumber) => `${phoneNumber}@temp.com`,
+        getTempName: (phoneNumber) => phoneNumber.replace("+91", ""),
+      },
+    }),
+  ],
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   logger: {
