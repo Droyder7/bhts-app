@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import OTPLoginForm from "@/components/otp-login-form";
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  OTPLoginForm,
+  SignInForm,
+  SignUpForm,
+} from "@/features/auth/components/";
 
 type AuthModeParams = {
   mode?: AuthMode;
