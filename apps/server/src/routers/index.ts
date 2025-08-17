@@ -1,6 +1,8 @@
 import type { RouterClient } from "@orpc/server";
 import { checkDbConnection } from "@/db";
 import { Procedures } from "../lib/orpc";
+import { categoryRouter } from "./category";
+import { specializationRouter } from "./specialization";
 
 export const appRouter = {
   healthCheck: Procedures.public.handler(async () => {
@@ -20,6 +22,8 @@ export const appRouter = {
       user: context.auth?.user,
     };
   }),
+  category: categoryRouter,
+  specialization: specializationRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

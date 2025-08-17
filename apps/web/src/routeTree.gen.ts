@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
+import { Route as CategoriesParentIdRouteImport } from './routes/categories/$parentId'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as ProtectedMemberRouteRouteImport } from './routes/_protected/member/route'
@@ -30,6 +32,16 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesParentIdRoute = CategoriesParentIdRouteImport.update({
+  id: '/categories/$parentId',
+  path: '/categories/$parentId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
@@ -69,6 +81,8 @@ export interface FileRoutesByFullPath {
   '/member': typeof ProtectedMemberRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/categories/$parentId': typeof CategoriesParentIdRoute
+  '/categories': typeof CategoriesIndexRoute
   '/admin/': typeof ProtectedAdminIndexRoute
   '/member/': typeof ProtectedMemberIndexRoute
 }
@@ -76,6 +90,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/categories/$parentId': typeof CategoriesParentIdRoute
+  '/categories': typeof CategoriesIndexRoute
   '/admin': typeof ProtectedAdminIndexRoute
   '/member': typeof ProtectedMemberIndexRoute
 }
@@ -88,6 +104,8 @@ export interface FileRoutesById {
   '/_protected/member': typeof ProtectedMemberRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/categories/$parentId': typeof CategoriesParentIdRoute
+  '/categories/': typeof CategoriesIndexRoute
   '/_protected/admin/': typeof ProtectedAdminIndexRoute
   '/_protected/member/': typeof ProtectedMemberIndexRoute
 }
@@ -99,10 +117,19 @@ export interface FileRouteTypes {
     | '/member'
     | '/login'
     | '/dashboard'
+    | '/categories/$parentId'
+    | '/categories'
     | '/admin/'
     | '/member/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/admin' | '/member'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/categories/$parentId'
+    | '/categories'
+    | '/admin'
+    | '/member'
   id:
     | '__root__'
     | '/'
@@ -112,6 +139,8 @@ export interface FileRouteTypes {
     | '/_protected/member'
     | '/_auth/login'
     | '/_protected/dashboard'
+    | '/categories/$parentId'
+    | '/categories/'
     | '/_protected/admin/'
     | '/_protected/member/'
   fileRoutesById: FileRoutesById
@@ -120,6 +149,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
+  CategoriesParentIdRoute: typeof CategoriesParentIdRoute
+  CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -143,6 +174,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/': {
+      id: '/categories/'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/$parentId': {
+      id: '/categories/$parentId'
+      path: '/categories/$parentId'
+      fullPath: '/categories/$parentId'
+      preLoaderRoute: typeof CategoriesParentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_protected/dashboard': {
@@ -244,6 +289,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
+  CategoriesParentIdRoute: CategoriesParentIdRoute,
+  CategoriesIndexRoute: CategoriesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
