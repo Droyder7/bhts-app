@@ -2,6 +2,7 @@ import type { RouterClient } from "@orpc/server";
 import { checkDbConnection } from "@/db";
 import { Procedures } from "../lib/orpc";
 import { categoryRouter } from "./category";
+import { expertRouter } from "./expert";
 import { specializationRouter } from "./specialization";
 
 export const appRouter = {
@@ -23,6 +24,7 @@ export const appRouter = {
     };
   }),
   category: categoryRouter,
+  expert: expertRouter,
   specialization: specializationRouter,
 };
 export type AppRouter = typeof appRouter;

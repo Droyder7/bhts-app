@@ -12,10 +12,6 @@ import {
 } from "@/components/ui/card";
 import { orpc } from "@/utils/orpc";
 
-type CategoryByParentParams = {
-  parentId: string;
-};
-
 export const Route = createFileRoute("/categories/$parentId")({
   loader: ({ context: { queryClient }, params }) =>
     queryClient.ensureQueryData(

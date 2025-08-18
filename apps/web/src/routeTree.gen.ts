@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ExpertsRouteImport } from './routes/experts'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as ProtectedAdminRouteRouteImport } from './routes/_protected/adm
 import { Route as ProtectedMemberIndexRouteImport } from './routes/_protected/member/index'
 import { Route as ProtectedAdminIndexRouteImport } from './routes/_protected/admin/index'
 
+const ExpertsRoute = ExpertsRouteImport.update({
+  id: '/experts',
+  path: '/experts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
   getParentRoute: () => rootRouteImport,
@@ -77,6 +83,7 @@ const ProtectedAdminIndexRoute = ProtectedAdminIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/experts': typeof ExpertsRoute
   '/admin': typeof ProtectedAdminRouteRouteWithChildren
   '/member': typeof ProtectedMemberRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/experts': typeof ExpertsRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/categories/$parentId': typeof CategoriesParentIdRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_protected': typeof ProtectedRouteRouteWithChildren
+  '/experts': typeof ExpertsRoute
   '/_protected/admin': typeof ProtectedAdminRouteRouteWithChildren
   '/_protected/member': typeof ProtectedMemberRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/experts'
     | '/admin'
     | '/member'
     | '/login'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/experts'
     | '/login'
     | '/dashboard'
     | '/categories/$parentId'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/_protected'
+    | '/experts'
     | '/_protected/admin'
     | '/_protected/member'
     | '/_auth/login'
@@ -149,12 +161,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
+  ExpertsRoute: typeof ExpertsRoute
   CategoriesParentIdRoute: typeof CategoriesParentIdRoute
   CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/experts': {
+      id: '/experts'
+      path: '/experts'
+      fullPath: '/experts'
+      preLoaderRoute: typeof ExpertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected': {
       id: '/_protected'
       path: ''
@@ -289,6 +309,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
+  ExpertsRoute: ExpertsRoute,
   CategoriesParentIdRoute: CategoriesParentIdRoute,
   CategoriesIndexRoute: CategoriesIndexRoute,
 }
