@@ -8,6 +8,7 @@ import { createContext } from "./lib/context";
 import { appRouter } from "./routers/index";
 
 const app = new Hono();
+const PORT = process.env.PORT || 3000;
 
 app.use(logger());
 app.use(
@@ -40,4 +41,7 @@ app.get("/", (c) => {
   return c.text("OK");
 });
 
-export default app;
+export default {
+  port: Number(PORT),
+  fetch: app.fetch,
+};

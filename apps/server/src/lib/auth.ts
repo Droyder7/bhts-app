@@ -28,7 +28,7 @@ export const auth = betterAuth({
     }),
   ],
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: `http://localhost:${process.env.PORT}`,
   logger: {
     level: "debug",
     log: (level, message, ...args) => {
@@ -49,4 +49,5 @@ export const auth = betterAuth({
       },
     },
   },
+  telemetry: { enabled: false },
 });

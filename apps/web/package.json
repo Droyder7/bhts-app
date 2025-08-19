@@ -5,6 +5,7 @@
   "scripts": {
     "build": "vite build",
     "serve": "vite preview",
+    "start": "NODE_ENV=production PORT=8080 node .output/server/index.mjs",
     "dev": "vite dev --port=3001"
   },
   "dependencies": {
