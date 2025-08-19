@@ -6,12 +6,17 @@ import { ROLES } from "@/lib/types";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 
+const rawOrigins = process.env.CORS_ORIGIN || "";
+export const origins = rawOrigins.includes(",")
+  ? rawOrigins.split(",").map((o) => o.trim())
+  : [rawOrigins];
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: schema,
   }),
-  trustedOrigins: [process.env.CORS_ORIGIN || ""],
+  trustedOrigins: [...origins],
   emailAndPassword: {
     enabled: true,
   },
@@ -47,6 +52,12 @@ export const auth = betterAuth({
           output: z.enum(ROLES),
         },
       },
+    },
+  },
+  advanced: {
+    defaultCookieAttributes: {
+      secure: true,
+      sameSite: "None",
     },
   },
   telemetry: { enabled: false },

@@ -3,17 +3,12 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { auth } from "./lib/auth";
+import { auth, origins } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { appRouter } from "./routers/index";
 
 const app = new Hono();
 const PORT = process.env.PORT || 3000;
-
-const rawOrigins = process.env.CORS_ORIGIN || "";
-const origins = rawOrigins.includes(",")
-  ? rawOrigins.split(",").map((o) => o.trim())
-  : rawOrigins;
 
 app.use(logger());
 app.use(
