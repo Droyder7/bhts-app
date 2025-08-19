@@ -1,4 +1,15 @@
-import { and, asc, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -63,6 +74,7 @@ const createExpertSchema = z.object({
     })
     .optional(),
   perHourRate: z.number().min(0).optional(),
+  yearsOfExperience: z.number().min(0).optional(),
 });
 
 const updateExpertSchema = z.object({
@@ -118,6 +130,7 @@ const updateExpertSchema = z.object({
     })
     .optional(),
   perHourRate: z.number().min(0).optional(),
+  yearsOfExperience: z.number().min(0).optional(),
   accountStatus: z.enum(["active", "inactive", "suspended"]).optional(),
   verificationStatus: z.enum(["pending", "verified", "rejected"]).optional(),
 });
@@ -156,6 +169,7 @@ const expertPaginationSchema = z.object({
   maxRate: z.number().min(0).optional(),
   skills: z.array(z.string()).optional(),
   languages: z.array(z.enum(["hindi", "english"])).optional(),
+  minYearsOfExperience: z.number().min(0).optional(),
 });
 
 const updateStatusSchema = z.object({
@@ -182,7 +196,6 @@ export const expertRouter = {
         sortBy,
         sortOrder,
         searchKeyword,
-
         accountStatus,
         verificationStatus,
         city,
@@ -193,6 +206,7 @@ export const expertRouter = {
         maxRate,
         skills,
         languages,
+        minYearsOfExperience,
       } = input;
       const offset = (page - 1) * limit;
 
@@ -249,6 +263,52 @@ export const expertRouter = {
             expert.id,
             expertIds.map((id) => id.expertId),
           ),
+        );
+      }
+
+      // Additional filters for skills and languages (if they are arrays)
+      if (skills && skills.length > 0) {
+        // Assuming skills is stored as an array in the database
+        whereConditions.push(
+          sql`${expert.skills} && ${skills}`, // PostgreSQL array overlap operator
+        );
+      }
+
+      if (languages && languages.length > 0) {
+        // Check if any of the expert's languages match any of the given languages
+        whereConditions.push(
+          sql`EXISTS (
+      SELECT 1 
+      FROM unnest(${expert.languages}) AS expert_lang 
+      WHERE expert_lang = ANY(${sql`ARRAY[${sql.join(
+        languages.map((lang) => sql`${lang}`),
+        sql`, `,
+      )}]`})
+    )`,
+        );
+      }
+
+      // Rating filters (using SQL for proper decimal comparison)
+      if (minRating) {
+        whereConditions.push(gte(expert.averageRating, minRating.toString()));
+      }
+
+      if (maxRating) {
+        whereConditions.push(lte(expert.averageRating, maxRating.toString()));
+      }
+
+      // Rate filters (using SQL for proper decimal comparison)
+      if (minRate) {
+        whereConditions.push(gte(expert.perHourRate, minRate.toString()));
+      }
+
+      if (maxRate) {
+        whereConditions.push(lte(expert.perHourRate, maxRate.toString()));
+      }
+
+      if (minYearsOfExperience) {
+        whereConditions.push(
+          gte(expert.yearsOfExperience, minYearsOfExperience),
         );
       }
 

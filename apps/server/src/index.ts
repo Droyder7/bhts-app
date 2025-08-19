@@ -10,11 +10,16 @@ import { appRouter } from "./routers/index";
 const app = new Hono();
 const PORT = process.env.PORT || 3000;
 
+const rawOrigins = process.env.CORS_ORIGIN || "";
+const origins = rawOrigins.includes(",")
+  ? rawOrigins.split(",").map((o) => o.trim())
+  : rawOrigins;
+
 app.use(logger());
 app.use(
   "/*",
   cors({
-    origin: process.env.CORS_ORIGIN || "",
+    origin: origins,
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,

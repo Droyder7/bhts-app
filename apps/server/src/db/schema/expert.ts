@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { SQL, sql } from "drizzle-orm";
 import {
   check,
   decimal,
@@ -72,6 +72,7 @@ export const expert = pgTable(
       .$type<VerificationStatus>()
       .default("pending"),
     totalSessions: integer("total_sessions").default(0),
+    yearsOfExperience: integer("years_of_experience").default(0),
     perHourRate: decimal("per_hour_rate", { precision: 10, scale: 2 }),
     averageRating: decimal("average_rating", { precision: 3, scale: 2 }),
     lastLogin: timestamp("last_login"),
