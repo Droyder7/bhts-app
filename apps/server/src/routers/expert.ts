@@ -1,8 +1,12 @@
-import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { experts, specializations } from "@/db/schema";
-import type { AccountStatus, VerificationStatus } from "@/db/schema/profiles";
+import {
+  expert,
+  expertSpecializations,
+  specializationCategories,
+} from "@/db/schema";
+import type { AccountStatus, VerificationStatus } from "@/db/schema/expert";
 import { Procedures } from "../lib/orpc";
 
 // Input validation schemas
@@ -129,6 +133,7 @@ const userIdSchema = z.object({
 const expertPaginationSchema = z.object({
   page: z.number().min(1).default(1),
   limit: z.number().min(1).max(100).default(20),
+  categoryId: z.uuid().optional(),
   sortBy: z
     .enum([
       "firstName",
@@ -140,7 +145,7 @@ const expertPaginationSchema = z.object({
     ])
     .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
-  search: z.string().optional(),
+  searchKeyword: z.string().optional(),
   accountStatus: z.enum(["active", "inactive", "suspended"]).optional(),
   verificationStatus: z.enum(["pending", "verified", "rejected"]).optional(),
   city: z.string().optional(),
@@ -166,16 +171,18 @@ const updateRatingSchema = z.object({
 });
 
 export const expertRouter = {
-  // Get all experts with pagination and filtering
+  // Get all expert with pagination and filtering
   getAll: Procedures.public
     .input(expertPaginationSchema)
     .handler(async ({ input }) => {
       const {
         page,
         limit,
+        categoryId,
         sortBy,
         sortOrder,
-        search,
+        searchKeyword,
+
         accountStatus,
         verificationStatus,
         city,
@@ -192,32 +199,57 @@ export const expertRouter = {
       // Build where conditions
       const whereConditions = [];
 
-      if (search) {
+      if (searchKeyword) {
         whereConditions.push(
           or(
-            ilike(experts.firstName, `%${search}%`),
-            ilike(experts.lastName, `%${search}%`),
-            ilike(experts.bio, `%${search}%`),
+            ilike(expert.firstName, `%${searchKeyword}%`),
+            ilike(expert.lastName, `%${searchKeyword}%`),
+            ilike(expert.bio, `%${searchKeyword}%`),
           ),
         );
       }
 
       if (accountStatus) {
-        whereConditions.push(eq(experts.accountStatus, accountStatus));
+        whereConditions.push(eq(expert.accountStatus, accountStatus));
       }
 
       if (verificationStatus) {
-        whereConditions.push(
-          eq(experts.verificationStatus, verificationStatus),
-        );
+        whereConditions.push(eq(expert.verificationStatus, verificationStatus));
       }
 
       if (city) {
-        whereConditions.push(ilike(experts.city, `%${city}%`));
+        whereConditions.push(ilike(expert.city, `%${city}%`));
       }
 
       if (state) {
-        whereConditions.push(ilike(experts.state, `%${state}%`));
+        whereConditions.push(ilike(expert.state, `%${state}%`));
+      }
+
+      if (categoryId) {
+        // get specializations by categoryId
+        const specializations = await db
+          .select()
+          .from(specializationCategories)
+          .where(eq(specializationCategories.categoryId, categoryId));
+        // get expert ids by specializations
+        const expertIds = await db
+          .select({
+            expertId: expertSpecializations.expertId,
+          })
+          .from(expertSpecializations)
+          .where(
+            inArray(
+              expertSpecializations.specializationId,
+              specializations.map((spec) => spec.specializationId),
+            ),
+          );
+        // add expert ids to where conditions
+        whereConditions.push(
+          inArray(
+            expert.id,
+            expertIds.map((id) => id.expertId),
+          ),
+        );
       }
 
       // Note: Rating and rate filtering would need custom SQL for proper comparison
@@ -225,10 +257,10 @@ export const expertRouter = {
 
       // Build order by
       const orderBy =
-        sortOrder === "desc" ? desc(experts[sortBy]) : asc(experts[sortBy]);
+        sortOrder === "desc" ? desc(expert[sortBy]) : asc(expert[sortBy]);
 
-      const [expertsData, totalCount] = await Promise.all([
-        db.query.experts.findMany({
+      const [expertData, totalCount] = await Promise.all([
+        db.query.expert.findMany({
           where:
             whereConditions.length > 0 ? and(...whereConditions) : undefined,
           orderBy,
@@ -240,24 +272,30 @@ export const expertRouter = {
                 id: true,
                 name: true,
                 email: true,
+                phoneNumber: true,
                 image: true,
               },
             },
-            specializations: {
+            expertSpecializations: {
               with: {
-                category: true,
+                specialization: {
+                  columns: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
         }),
         db.$count(
-          experts,
+          expert,
           whereConditions.length > 0 ? and(...whereConditions) : undefined,
         ),
       ]);
 
       return {
-        experts: expertsData,
+        experts: expertData,
         pagination: {
           page,
           limit,
@@ -271,22 +309,15 @@ export const expertRouter = {
   getById: Procedures.public
     .input(expertIdSchema)
     .handler(async ({ input }) => {
-      const expert = await db.query.experts.findFirst({
-        where: eq(experts.id, input.id),
+      const record = await db.query.expert.findFirst({
+        where: eq(expert.id, input.id),
         with: {
-          user: {
-            columns: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-            },
-          },
-          specializations: {
+          expertSpecializations: {
             with: {
-              category: {
-                with: {
-                  parent: true,
+              specialization: {
+                columns: {
+                  id: true,
+                  name: true,
                 },
               },
             },
@@ -294,19 +325,54 @@ export const expertRouter = {
         },
       });
 
-      if (!expert) {
+      if (!record) {
         throw new Error("Expert not found");
       }
 
-      return expert;
+      return record;
+    }),
+
+  getByIdWithUser: Procedures.public
+    .input(expertIdSchema)
+    .handler(async ({ input }) => {
+      const record = await db.query.expert.findFirst({
+        where: eq(expert.id, input.id),
+        with: {
+          user: {
+            columns: {
+              id: true,
+              name: true,
+              email: true,
+              phoneNumber: true,
+              image: true,
+            },
+          },
+          expertSpecializations: {
+            with: {
+              specialization: {
+                columns: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!record) {
+        throw new Error("Expert not found");
+      }
+
+      return record;
     }),
 
   // Get expert by user ID
   getByUserId: Procedures.public
     .input(userIdSchema)
     .handler(async ({ input }) => {
-      const expert = await db.query.experts.findFirst({
-        where: eq(experts.userId, input.userId),
+      const record = await db.query.expert.findFirst({
+        where: eq(expert.userId, input.userId),
         with: {
           user: {
             columns: {
@@ -316,11 +382,12 @@ export const expertRouter = {
               image: true,
             },
           },
-          specializations: {
+          expertSpecializations: {
             with: {
-              category: {
-                with: {
-                  parent: true,
+              specialization: {
+                columns: {
+                  id: true,
+                  name: true,
                 },
               },
             },
@@ -328,60 +395,65 @@ export const expertRouter = {
         },
       });
 
-      if (!expert) {
+      if (!record) {
         throw new Error("Expert not found");
       }
 
-      return expert;
+      return record;
     }),
 
-  // Get verified experts only
+  // Get verified expert only
   getVerified: Procedures.public
-    .input(expertPaginationSchema.omit({ verificationStatus: true }))
+    .input(expertPaginationSchema)
     .handler(async ({ input }) => {
       const {
         page,
         limit,
         sortBy,
         sortOrder,
-        search,
         accountStatus,
+        verificationStatus,
         city,
         state,
+        searchKeyword,
       } = input;
       const offset = (page - 1) * limit;
 
       // Build where conditions
-      const whereConditions = [eq(experts.verificationStatus, "verified")];
+      const whereConditions = [];
 
-      // if (search) {
-      //   whereConditions.push(
-      //     or(
-      //       ilike(experts.firstName, `%${search}%`),
-      //       ilike(experts.lastName, `%${search}%`),
-      //       ilike(experts.bio, `%${search}%`),
-      //     ),
-      //   );
-      // }
+      if (verificationStatus) {
+        whereConditions.push(eq(expert.verificationStatus, verificationStatus));
+      }
+
+      if (searchKeyword) {
+        whereConditions.push(
+          or(
+            ilike(expert.firstName, `%${searchKeyword}%`),
+            ilike(expert.lastName, `%${searchKeyword}%`),
+            ilike(expert.bio, `%${searchKeyword}%`),
+          ),
+        );
+      }
 
       if (accountStatus) {
-        whereConditions.push(eq(experts.accountStatus, accountStatus));
+        whereConditions.push(eq(expert.accountStatus, accountStatus));
       }
 
       if (city) {
-        whereConditions.push(ilike(experts.city, `%${city}%`));
+        whereConditions.push(ilike(expert.city, `%${city}%`));
       }
 
       if (state) {
-        whereConditions.push(ilike(experts.state, `%${state}%`));
+        whereConditions.push(ilike(expert.state, `%${state}%`));
       }
 
       // Build order by
       const orderBy =
-        sortOrder === "desc" ? desc(experts[sortBy]) : asc(experts[sortBy]);
+        sortOrder === "desc" ? desc(expert[sortBy]) : asc(expert[sortBy]);
 
-      const [expertsData, totalCount] = await Promise.all([
-        db.query.experts.findMany({
+      const [expertData, totalCount] = await Promise.all([
+        db.query.expert.findMany({
           where: and(...whereConditions),
           orderBy,
           limit,
@@ -395,18 +467,23 @@ export const expertRouter = {
                 image: true,
               },
             },
-            specializations: {
+            expertSpecializations: {
               with: {
-                category: true,
+                specialization: {
+                  columns: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
         }),
-        db.$count(experts, and(...whereConditions)),
+        db.$count(expert, and(...whereConditions)),
       ]);
 
       return {
-        experts: expertsData,
+        expert: expertData,
         pagination: {
           page,
           limit,
@@ -421,8 +498,8 @@ export const expertRouter = {
     .input(createExpertSchema)
     .handler(async ({ input, context }) => {
       // Check if expert profile already exists for this user
-      const existingExpert = await db.query.experts.findFirst({
-        where: eq(experts.userId, input.userId),
+      const existingExpert = await db.query.expert.findFirst({
+        where: eq(expert.userId, input.userId),
       });
 
       if (existingExpert) {
@@ -438,7 +515,7 @@ export const expertRouter = {
       }
 
       const [newExpert] = await db
-        .insert(experts)
+        .insert(expert)
         .values({
           ...input,
           perHourRate: input.perHourRate?.toString(),
@@ -450,15 +527,15 @@ export const expertRouter = {
       return newExpert;
     }),
 
-  // Update expert profile (Protected - experts can update their own profile)
+  // Update expert profile (Protected - expert can update their own profile)
   update: Procedures.protected
     .input(updateExpertSchema)
     .handler(async ({ input, context }) => {
       const { id, ...updateData } = input;
 
       // Get current expert to check ownership
-      const currentExpert = await db.query.experts.findFirst({
-        where: eq(experts.id, id),
+      const currentExpert = await db.query.expert.findFirst({
+        where: eq(expert.id, id),
       });
 
       if (!currentExpert) {
@@ -480,12 +557,12 @@ export const expertRouter = {
       }
 
       const [updatedExpert] = await db
-        .update(experts)
+        .update(expert)
         .set({
           ...updateData,
           perHourRate: updateData.perHourRate?.toString(),
         })
-        .where(eq(experts.id, id))
+        .where(eq(expert.id, id))
         .returning();
 
       if (!updatedExpert) {
@@ -502,9 +579,9 @@ export const expertRouter = {
       const { id, ...statusData } = input;
 
       const [updatedExpert] = await db
-        .update(experts)
+        .update(expert)
         .set(statusData)
-        .where(eq(experts.id, id))
+        .where(eq(expert.id, id))
         .returning();
 
       if (!updatedExpert) {
@@ -521,12 +598,12 @@ export const expertRouter = {
       const { id, averageRating, totalSessions } = input;
 
       const [updatedExpert] = await db
-        .update(experts)
+        .update(expert)
         .set({
           averageRating: averageRating.toString(),
           totalSessions,
         })
-        .where(eq(experts.id, id))
+        .where(eq(expert.id, id))
         .returning();
 
       if (!updatedExpert) {
@@ -541,9 +618,11 @@ export const expertRouter = {
     .input(expertIdSchema)
     .handler(async ({ input }) => {
       // Check if expert has active specializations
-      const hasSpecializations = await db.query.specializations.findFirst({
-        where: eq(specializations.expertId, input.id),
-      });
+      const hasSpecializations = await db.query.expertSpecializations.findFirst(
+        {
+          where: eq(expertSpecializations.expertId, input.id),
+        },
+      );
 
       if (hasSpecializations) {
         throw new Error(
@@ -552,8 +631,8 @@ export const expertRouter = {
       }
 
       const [deletedExpert] = await db
-        .delete(experts)
-        .where(eq(experts.id, input.id))
+        .delete(expert)
+        .where(eq(expert.id, input.id))
         .returning();
 
       if (!deletedExpert) {
@@ -565,61 +644,23 @@ export const expertRouter = {
 
   // Get expert statistics (Admin only)
   getStatistics: Procedures.roleGuard.admin.handler(async () => {
-    const [totalExperts, verifiedExperts, pendingExperts, activeExperts] =
+    const [totalexpert, verifiedexpert, pendingexpert, activeexpert] =
       await Promise.all([
-        db.$count(experts),
-        db.$count(experts, eq(experts.verificationStatus, "verified")),
-        db.$count(experts, eq(experts.verificationStatus, "pending")),
-        db.$count(experts, eq(experts.accountStatus, "active")),
+        db.$count(expert),
+        db.$count(expert, eq(expert.verificationStatus, "verified")),
+        db.$count(expert, eq(expert.verificationStatus, "pending")),
+        db.$count(expert, eq(expert.accountStatus, "active")),
       ]);
 
     return {
-      totalExperts,
-      verifiedExperts,
-      pendingExperts,
-      activeExperts,
-      rejectedExperts: totalExperts - verifiedExperts - pendingExperts,
-      inactiveExperts: totalExperts - activeExperts,
+      totalexpert,
+      verifiedexpert,
+      pendingexpert,
+      activeexpert,
+      rejectedexpert: totalexpert - verifiedexpert - pendingexpert,
+      inactiveexpert: totalexpert - activeexpert,
     };
   }),
-
-  // Get top-rated experts
-  getTopRated: Procedures.public
-    .input(
-      z.object({
-        limit: z.number().min(1).max(50).default(10),
-        minSessions: z.number().min(0).default(5),
-      }),
-    )
-    .handler(async ({ input }) => {
-      const { limit, minSessions } = input;
-
-      const topExperts = await db.query.experts.findMany({
-        where: and(
-          eq(experts.verificationStatus, "verified"),
-          eq(experts.accountStatus, "active"),
-        ),
-        orderBy: [desc(experts.averageRating), desc(experts.totalSessions)],
-        limit,
-        with: {
-          user: {
-            columns: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-          specializations: {
-            with: {
-              category: true,
-            },
-            where: eq(specializations.isPrimary, true),
-          },
-        },
-      });
-
-      return topExperts;
-    }),
 };
 
 export type ExpertRouter = typeof expertRouter;

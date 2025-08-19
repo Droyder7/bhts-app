@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/categories/$parentId")({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const { parentId } = Route.useParams();
   const {
     data: categories,
@@ -118,9 +119,10 @@ function RouteComponent() {
               className="cursor-pointer transition-shadow hover:shadow-md"
               onClick={() => {
                 // If this category has a parent, navigate to show its siblings
-                if (category.parentCategoryId) {
-                  window.location.href = `/categories/${category.parentCategoryId}`;
-                }
+                navigate({
+                  to: "/experts",
+                  search: { category: category.id },
+                });
               }}
             >
               <CardHeader>
@@ -139,6 +141,15 @@ function RouteComponent() {
                 )}
               </CardHeader>
               <CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">
+                    {category.specializations?.length
+                      ? category.specializations
+                          .map((specialization) => specialization.name)
+                          .join(", ")
+                      : "No specializations"}
+                  </span>
+                </div>
                 <div className="space-y-2">
                   {category.parent && (
                     <div className="flex items-center gap-2 text-sm">

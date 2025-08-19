@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   check,
   decimal,
@@ -10,8 +10,6 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { gender, id, timeStamps, userId } from "../common";
-import { user } from "./auth";
-import { specializations } from "./categories";
 
 export interface Experience {
   company: string;
@@ -42,32 +40,12 @@ export interface PaymentAccount {
 
 export type Language = "hindi" | "english";
 
-export type Interest = "music" | "art" | "sports" | "technology" | "other";
-
 export type AccountStatus = "active" | "inactive" | "suspended";
 
 export type VerificationStatus = "pending" | "verified" | "rejected";
 
-export const customers = pgTable(
-  "customers",
-  {
-    id,
-    userId,
-    gender,
-    address: text("address"),
-    examPreferences: text("exam_preferences").array(),
-    interestPreferences: text("interest_preferences")
-      .$type<Interest[]>()
-      .array(),
-    accountStatus: text("account_status").notNull().default("active"),
-    lastLogin: timestamp("last_login"),
-    ...timeStamps,
-  },
-  (table) => [index("customers_user_id_idx").on(table.userId)],
-);
-
-export const experts = pgTable(
-  "experts",
+export const expert = pgTable(
+  "expert",
   {
     id,
     userId,
@@ -108,11 +86,3 @@ export const experts = pgTable(
     check("per_hour_rate_check", sql`${table.perHourRate} >= 0`),
   ],
 );
-
-export const expertsRelations = relations(experts, ({ one, many }) => ({
-  user: one(user, {
-    fields: [experts.userId],
-    references: [user.id],
-  }),
-  specializations: many(specializations),
-}));

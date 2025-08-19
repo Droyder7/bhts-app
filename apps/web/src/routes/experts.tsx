@@ -8,6 +8,7 @@ import {
   Star,
   XCircle,
 } from "lucide-react";
+import z from "zod";
 import Loader from "@/components/loader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,20 +21,39 @@ import {
 } from "@/components/ui/card";
 import { orpc } from "@/utils/orpc";
 
+const expertsSearchSchema = z.object({
+  category: z.string().optional(),
+});
+
+type ExpertsSearch = z.infer<typeof expertsSearchSchema>;
+
 export const Route = createFileRoute("/experts")({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(orpc.expert.getAll.queryOptions({ input: {} })),
+  validateSearch: (search): ExpertsSearch => expertsSearchSchema.parse(search),
+  loaderDeps: ({ search: { category } }) => ({
+    category,
+  }),
+  loader: ({ context: { queryClient }, deps: { category } }) =>
+    queryClient.ensureQueryData(
+      orpc.expert.getAll.queryOptions({
+        input: {
+          categoryId: category,
+        },
+      }),
+    ),
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { category } = Route.useSearch();
   const {
     data: expertsData,
     isLoading,
     error,
   } = useQuery(
     orpc.expert.getAll.queryOptions({
-      input: {},
+      input: {
+        categoryId: category,
+      },
     }),
   );
 
@@ -210,19 +230,14 @@ function RouteComponent() {
                   </div>
                 )}
 
-                {expert.specializations &&
+                {/* {expert.specializations &&
                   expert.specializations.length > 0 && (
                     <div className="space-y-1">
                       <p className="font-medium text-sm">Specializations:</p>
                       <div className="flex flex-wrap gap-1">
                         {expert.specializations.slice(0, 2).map((spec) => (
-                          <Badge
-                            key={spec.id}
-                            variant={spec.isPrimary ? "default" : "secondary"}
-                            className="text-xs"
-                          >
-                            {spec.category.name}
-                            {spec.isPrimary && " (Primary)"}
+                          <Badge key={spec.id} className="text-xs">
+                            {spec.name}
                           </Badge>
                         ))}
                         {expert.specializations.length > 2 && (
@@ -232,7 +247,7 @@ function RouteComponent() {
                         )}
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                 {expert.languages && expert.languages.length > 0 && (
                   <div className="flex items-center gap-1 text-muted-foreground text-sm">

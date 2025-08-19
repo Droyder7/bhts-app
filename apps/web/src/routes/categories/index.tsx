@@ -13,7 +13,7 @@ import { orpc } from "@/utils/orpc";
 export const Route = createFileRoute("/categories/")({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(
-      orpc.category.getAll.queryOptions({ input: {} }),
+      orpc.category.getAllRootCategories.queryOptions({ input: {} }),
     ),
   component: RouteComponent,
 });
@@ -25,7 +25,7 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(
-    orpc.category.getAll.queryOptions({
+    orpc.category.getAllRootCategories.queryOptions({
       input: {},
     }),
   );
@@ -76,7 +76,7 @@ function RouteComponent() {
     );
   }
 
-  const categories = categoriesData?.categories || [];
+  const categories = categoriesData || [];
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
@@ -118,24 +118,6 @@ function RouteComponent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {category.parent && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">Parent:</span>
-                      <span className="font-medium">
-                        {category.parent.name}
-                      </span>
-                    </div>
-                  )}
-                  {category.children && category.children.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">
-                        Subcategories:
-                      </span>
-                      <span className="font-medium">
-                        {category.children.length}
-                      </span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-muted-foreground">Status:</span>
                     <span
@@ -158,7 +140,7 @@ function RouteComponent() {
         </div>
       )}
 
-      {categoriesData?.pagination && (
+      {/* {categoriesData?.pagination && (
         <div className="mt-8 flex items-center justify-center">
           <div className="text-muted-foreground text-sm">
             Showing {categories.length} of {categoriesData.pagination.total}{" "}
@@ -172,7 +154,7 @@ function RouteComponent() {
             )}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { categories, specializations } from "@/db/schema";
+import { category, specializationCategories } from "@/db/schema";
 import { Procedures } from "../lib/orpc";
 
 // Input validation schemas
@@ -9,7 +9,6 @@ const createCategorySchema = z.object({
   name: z.string().min(1, "Name is required").max(255, "Name too long"),
   description: z.string().optional(),
   parentCategoryId: z.string().uuid().optional(),
-  isPrimary: z.boolean().default(false),
 });
 
 const updateCategorySchema = z.object({
@@ -22,7 +21,6 @@ const updateCategorySchema = z.object({
   description: z.string().optional(),
   parentCategoryId: z.string().uuid().optional(),
   isActive: z.boolean().optional(),
-  isPrimary: z.boolean().optional(),
 });
 
 const categoryIdSchema = z.object({
@@ -44,7 +42,7 @@ const paginationSchema = z.object({
 });
 
 export const categoryRouter = {
-  // Get all categories with pagination and filtering
+  // Get all category with pagination and filtering
   getAll: Procedures.public
     .input(paginationSchema)
     .handler(async ({ input }) => {
@@ -54,24 +52,22 @@ export const categoryRouter = {
       // Build where conditions
       const whereConditions = [];
       if (activeOnly) {
-        whereConditions.push(eq(categories.isActive, true));
+        whereConditions.push(eq(category.isActive, true));
       }
       if (parentId !== undefined) {
         whereConditions.push(
           parentId === null
-            ? isNull(categories.parentCategoryId)
-            : eq(categories.parentCategoryId, parentId),
+            ? isNull(category.parentCategoryId)
+            : eq(category.parentCategoryId, parentId),
         );
       }
 
       // Build order by
       const orderBy =
-        sortOrder === "desc"
-          ? desc(categories[sortBy])
-          : asc(categories[sortBy]);
+        sortOrder === "desc" ? desc(category[sortBy]) : asc(category[sortBy]);
 
-      const [categoriesData, totalCount] = await Promise.all([
-        db.query.categories.findMany({
+      const [categoryData, totalCount] = await Promise.all([
+        db.query.category.findMany({
           where:
             whereConditions.length > 0 ? and(...whereConditions) : undefined,
           orderBy,
@@ -80,18 +76,18 @@ export const categoryRouter = {
           with: {
             parent: true,
             children: {
-              where: activeOnly ? eq(categories.isActive, true) : undefined,
+              where: activeOnly ? eq(category.isActive, true) : undefined,
             },
           },
         }),
         db.$count(
-          categories,
+          category,
           whereConditions.length > 0 ? and(...whereConditions) : undefined,
         ),
       ]);
 
       return {
-        categories: categoriesData,
+        categories: categoryData,
         pagination: {
           page,
           limit,
@@ -105,35 +101,40 @@ export const categoryRouter = {
   getById: Procedures.public
     .input(categoryIdSchema)
     .handler(async ({ input }) => {
-      const category = await db.query.categories.findFirst({
-        where: eq(categories.id, input.id),
+      const foundCategory = await db.query.category.findFirst({
+        where: eq(category.id, input.id),
         with: {
           parent: true,
+          specializationCategories: {
+            with: {
+              specialization: true,
+            },
+          },
           children: {
-            where: eq(categories.isActive, true),
+            where: eq(category.isActive, true),
           },
         },
       });
 
-      if (!category) {
+      if (!foundCategory) {
         throw new Error("Category not found");
       }
 
-      return category;
+      return foundCategory;
     }),
 
-  // Get root categories (categories without parent)
-  getRootCategories: Procedures.public.handler(async () => {
-    const rootCategories = await db.query.categories.findMany({
+  // Get root category (category without parent)
+  getAllRootCategories: Procedures.public.handler(async () => {
+    const rootCategories = await db.query.category.findMany({
       where: and(
-        isNull(categories.parentCategoryId),
-        eq(categories.isActive, true),
+        isNull(category.parentCategoryId),
+        eq(category.isActive, true),
       ),
-      orderBy: asc(categories.name),
+      orderBy: asc(category.name),
       with: {
         children: {
-          where: eq(categories.isActive, true),
-          orderBy: asc(categories.name),
+          where: eq(category.isActive, true),
+          orderBy: asc(category.name),
         },
       },
     });
@@ -141,31 +142,41 @@ export const categoryRouter = {
     return rootCategories;
   }),
 
-  // Get all categories by parent ID
+  // Get all category by parent ID
   getAllByParent: Procedures.public
     .input(parentCategorySchema)
     .handler(async ({ input }) => {
       const { parentId, activeOnly } = input;
 
       // Build where conditions
-      const whereConditions = [eq(categories.parentCategoryId, parentId)];
+      const whereConditions = [eq(category.parentCategoryId, parentId)];
       if (activeOnly) {
-        whereConditions.push(eq(categories.isActive, true));
+        whereConditions.push(eq(category.isActive, true));
       }
 
-      const childCategories = await db.query.categories.findMany({
+      const childCategory = await db.query.category.findMany({
         where: and(...whereConditions),
-        orderBy: asc(categories.name),
+        orderBy: asc(category.name),
         with: {
           parent: true,
           children: {
-            where: activeOnly ? eq(categories.isActive, true) : undefined,
-            orderBy: asc(categories.name),
+            where: activeOnly ? eq(category.isActive, true) : undefined,
+            orderBy: asc(category.name),
+          },
+          specializationCategories: {
+            with: {
+              specialization: true,
+            },
           },
         },
       });
 
-      return childCategories;
+      return childCategory.map((item) => ({
+        ...item,
+        specializations: item.specializationCategories.map(
+          (item) => item.specialization,
+        ),
+      }));
     }),
 
   // Create new category (Admin only)
@@ -174,18 +185,15 @@ export const categoryRouter = {
     .handler(async ({ input }) => {
       // Validate parent category exists if provided
       if (input.parentCategoryId) {
-        const parentExists = await db.query.categories.findFirst({
-          where: eq(categories.id, input.parentCategoryId),
+        const parentExists = await db.query.category.findFirst({
+          where: eq(category.id, input.parentCategoryId),
         });
         if (!parentExists) {
           throw new Error("Parent category not found");
         }
       }
 
-      const [newCategory] = await db
-        .insert(categories)
-        .values(input)
-        .returning();
+      const [newCategory] = await db.insert(category).values(input).returning();
 
       return newCategory;
     }),
@@ -198,8 +206,8 @@ export const categoryRouter = {
 
       // Validate parent category exists if provided
       if (updateData.parentCategoryId) {
-        const parentExists = await db.query.categories.findFirst({
-          where: eq(categories.id, updateData.parentCategoryId),
+        const parentExists = await db.query.category.findFirst({
+          where: eq(category.id, updateData.parentCategoryId),
         });
         if (!parentExists) {
           throw new Error("Parent category not found");
@@ -212,9 +220,9 @@ export const categoryRouter = {
       }
 
       const [updatedCategory] = await db
-        .update(categories)
+        .update(category)
         .set(updateData)
-        .where(eq(categories.id, id))
+        .where(eq(category.id, id))
         .returning();
 
       if (!updatedCategory) {
@@ -229,26 +237,27 @@ export const categoryRouter = {
     .input(categoryIdSchema)
     .handler(async ({ input }) => {
       // Check if category has children
-      const hasChildren = await db.query.categories.findFirst({
-        where: eq(categories.parentCategoryId, input.id),
+      const hasChildren = await db.query.category.findFirst({
+        where: eq(category.parentCategoryId, input.id),
       });
 
       if (hasChildren) {
-        throw new Error("Cannot delete category with subcategories");
+        throw new Error("Cannot delete category with subcategory");
       }
 
       // Check if category has specializations
-      const hasSpecializations = await db.query.specializations.findFirst({
-        where: eq(specializations.categoryId, input.id),
-      });
+      const hasSpecializations =
+        await db.query.specializationCategories.findFirst({
+          where: eq(specializationCategories.categoryId, input.id),
+        });
 
       if (hasSpecializations) {
         throw new Error("Cannot delete category with active specializations");
       }
 
       const [deletedCategory] = await db
-        .delete(categories)
-        .where(eq(categories.id, input.id))
+        .delete(category)
+        .where(eq(category.id, input.id))
         .returning();
 
       if (!deletedCategory) {
@@ -257,28 +266,6 @@ export const categoryRouter = {
 
       return { success: true, deletedCategory };
     }),
-
-  // Get categories with expert count
-  getCategoriesWithExpertCount: Procedures.public.handler(async () => {
-    const categoriesWithCount = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-        description: categories.description,
-        parentCategoryId: categories.parentCategoryId,
-        isActive: categories.isActive,
-        isPrimary: categories.isPrimary,
-        expertCount: db.$count(
-          specializations,
-          eq(specializations.categoryId, categories.id),
-        ),
-      })
-      .from(categories)
-      .where(eq(categories.isActive, true))
-      .orderBy(asc(categories.name));
-
-    return categoriesWithCount;
-  }),
 };
 
 export type CategoryRouter = typeof categoryRouter;
