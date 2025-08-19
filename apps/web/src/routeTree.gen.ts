@@ -9,24 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ExpertsRouteImport } from './routes/experts'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
-import { Route as CategoriesParentIdRouteImport } from './routes/categories/$parentId'
+import { Route as PublicExpertsRouteImport } from './routes/_public/experts'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as ProtectedMemberRouteRouteImport } from './routes/_protected/member/route'
 import { Route as ProtectedAdminRouteRouteImport } from './routes/_protected/admin/route'
+import { Route as PublicCategoriesIndexRouteImport } from './routes/_public/categories/index'
 import { Route as ProtectedMemberIndexRouteImport } from './routes/_protected/member/index'
 import { Route as ProtectedAdminIndexRouteImport } from './routes/_protected/admin/index'
+import { Route as PublicCategoriesParentIdRouteImport } from './routes/_public/categories/$parentId'
 
-const ExpertsRoute = ExpertsRouteImport.update({
-  id: '/experts',
-  path: '/experts',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
   getParentRoute: () => rootRouteImport,
@@ -40,14 +35,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
-  id: '/categories/',
-  path: '/categories/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CategoriesParentIdRoute = CategoriesParentIdRouteImport.update({
-  id: '/categories/$parentId',
-  path: '/categories/$parentId',
+const PublicExpertsRoute = PublicExpertsRouteImport.update({
+  id: '/_public/experts',
+  path: '/experts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
@@ -70,6 +60,11 @@ const ProtectedAdminRouteRoute = ProtectedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
+const PublicCategoriesIndexRoute = PublicCategoriesIndexRouteImport.update({
+  id: '/_public/categories/',
+  path: '/categories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedMemberIndexRoute = ProtectedMemberIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -80,101 +75,100 @@ const ProtectedAdminIndexRoute = ProtectedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProtectedAdminRouteRoute,
 } as any)
+const PublicCategoriesParentIdRoute =
+  PublicCategoriesParentIdRouteImport.update({
+    id: '/_public/categories/$parentId',
+    path: '/categories/$parentId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/experts': typeof ExpertsRoute
   '/admin': typeof ProtectedAdminRouteRouteWithChildren
   '/member': typeof ProtectedMemberRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
-  '/categories/$parentId': typeof CategoriesParentIdRoute
-  '/categories': typeof CategoriesIndexRoute
+  '/experts': typeof PublicExpertsRoute
+  '/categories/$parentId': typeof PublicCategoriesParentIdRoute
   '/admin/': typeof ProtectedAdminIndexRoute
   '/member/': typeof ProtectedMemberIndexRoute
+  '/categories': typeof PublicCategoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/experts': typeof ExpertsRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
-  '/categories/$parentId': typeof CategoriesParentIdRoute
-  '/categories': typeof CategoriesIndexRoute
+  '/experts': typeof PublicExpertsRoute
+  '/categories/$parentId': typeof PublicCategoriesParentIdRoute
   '/admin': typeof ProtectedAdminIndexRoute
   '/member': typeof ProtectedMemberIndexRoute
+  '/categories': typeof PublicCategoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_protected': typeof ProtectedRouteRouteWithChildren
-  '/experts': typeof ExpertsRoute
   '/_protected/admin': typeof ProtectedAdminRouteRouteWithChildren
   '/_protected/member': typeof ProtectedMemberRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
-  '/categories/$parentId': typeof CategoriesParentIdRoute
-  '/categories/': typeof CategoriesIndexRoute
+  '/_public/experts': typeof PublicExpertsRoute
+  '/_public/categories/$parentId': typeof PublicCategoriesParentIdRoute
   '/_protected/admin/': typeof ProtectedAdminIndexRoute
   '/_protected/member/': typeof ProtectedMemberIndexRoute
+  '/_public/categories/': typeof PublicCategoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/experts'
     | '/admin'
     | '/member'
     | '/login'
     | '/dashboard'
+    | '/experts'
     | '/categories/$parentId'
-    | '/categories'
     | '/admin/'
     | '/member/'
+    | '/categories'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/experts'
     | '/login'
     | '/dashboard'
+    | '/experts'
     | '/categories/$parentId'
-    | '/categories'
     | '/admin'
     | '/member'
+    | '/categories'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_protected'
-    | '/experts'
     | '/_protected/admin'
     | '/_protected/member'
     | '/_auth/login'
     | '/_protected/dashboard'
-    | '/categories/$parentId'
-    | '/categories/'
+    | '/_public/experts'
+    | '/_public/categories/$parentId'
     | '/_protected/admin/'
     | '/_protected/member/'
+    | '/_public/categories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
-  ExpertsRoute: typeof ExpertsRoute
-  CategoriesParentIdRoute: typeof CategoriesParentIdRoute
-  CategoriesIndexRoute: typeof CategoriesIndexRoute
+  PublicExpertsRoute: typeof PublicExpertsRoute
+  PublicCategoriesParentIdRoute: typeof PublicCategoriesParentIdRoute
+  PublicCategoriesIndexRoute: typeof PublicCategoriesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/experts': {
-      id: '/experts'
-      path: '/experts'
-      fullPath: '/experts'
-      preLoaderRoute: typeof ExpertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_protected': {
       id: '/_protected'
       path: ''
@@ -196,18 +190,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories/': {
-      id: '/categories/'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/categories/$parentId': {
-      id: '/categories/$parentId'
-      path: '/categories/$parentId'
-      fullPath: '/categories/$parentId'
-      preLoaderRoute: typeof CategoriesParentIdRouteImport
+    '/_public/experts': {
+      id: '/_public/experts'
+      path: '/experts'
+      fullPath: '/experts'
+      preLoaderRoute: typeof PublicExpertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_protected/dashboard': {
@@ -238,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedAdminRouteRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_public/categories/': {
+      id: '/_public/categories/'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof PublicCategoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected/member/': {
       id: '/_protected/member/'
       path: '/'
@@ -251,6 +245,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof ProtectedAdminIndexRouteImport
       parentRoute: typeof ProtectedAdminRouteRoute
+    }
+    '/_public/categories/$parentId': {
+      id: '/_public/categories/$parentId'
+      path: '/categories/$parentId'
+      fullPath: '/categories/$parentId'
+      preLoaderRoute: typeof PublicCategoriesParentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -309,9 +310,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
-  ExpertsRoute: ExpertsRoute,
-  CategoriesParentIdRoute: CategoriesParentIdRoute,
-  CategoriesIndexRoute: CategoriesIndexRoute,
+  PublicExpertsRoute: PublicExpertsRoute,
+  PublicCategoriesParentIdRoute: PublicCategoriesParentIdRoute,
+  PublicCategoriesIndexRoute: PublicCategoriesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

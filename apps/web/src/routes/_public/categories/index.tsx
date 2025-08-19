@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { orpc } from "@/utils/orpc";
 
-export const Route = createFileRoute("/categories/")({
+export const Route = createFileRoute("/_public/categories/")({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(
       orpc.category.getAllRootCategories.queryOptions({ input: {} }),
