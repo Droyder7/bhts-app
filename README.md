@@ -62,12 +62,75 @@ bhts-app/
 
 - `bun dev`: Start all applications in development mode
 - `bun build`: Build all applications
+- `bun start`: Start all application builds in production mode
 - `bun dev:web`: Start only the web application
 - `bun dev:server`: Start only the server
 - `bun check-types`: Check TypeScript types across all apps
 - `bun db:push`: Push schema changes to database
 - `bun db:studio`: Open database studio UI
 - `bun check`: Run Biome formatting and linting
+Here’s a clean and concise section you can drop into your **`README.md`** to explain the deployment flow for your setup:
+Here’s an updated **Deployment** section for your `README.md` that covers both scenarios (external DB and local Postgres):
+
+## 🚀 Deployment
+
+We use **Docker Compose** to run the stack (`server + web`) with flexibility for database setup.
+
+### 1. Using External Database
+
+If you already have a database (e.g., cloud-hosted), just provide its URL via `.env`:
+
+```env
+DATABASE_URL=postgresql://user:password@host:5432/app-db
+CORS_ORIGIN=http://localhost:3001
+BETTER_AUTH_SECRET=your_secret
+PORT=3000
+```
+
+Run:
+
+```bash
+docker compose -f docker-compose.yml up --build -d
+```
+
+This starts:
+
+* `server` (backend on port `3000`)
+* `web` (frontend on port `3001`)
+
+---
+
+### 2. Using Local Postgres
+
+If no external DB is provided, you can spin up a local Postgres along with the app.
+
+Run:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.localdb.yml up --build -d
+```
+
+This starts:
+
+* `postgres` (local DB on port `5432`)
+* `server` (backend on port `3000`, waits until Postgres is healthy)
+* `web` (frontend on port `3001`)
+
+---
+
+### 3. Stopping Services
+
+To stop and remove containers:
+
+```bash
+docker compose down
+```
+
+To also remove volumes (clean DB data):
+
+```bash
+docker compose down -v
+```
 
 ## bts config
 

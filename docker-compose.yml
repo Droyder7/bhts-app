@@ -1,0 +1,29 @@
+name: bhts-app
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: bhts-server
+    env_file:
+      - ./apps/server/.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/app-db}
+      PORT: ${PORT:-3000}
+    ports:
+      - '${PORT:-3000}:3000'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: bhts-web
+    depends_on:
+      - server
+    env_file:
+      - ./apps/server/.env
+    environment:
+      PORT: 3001
+    ports:
+      - '3001:3001'
