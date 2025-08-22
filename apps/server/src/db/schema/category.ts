@@ -1,4 +1,10 @@
-import { boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  type AnyPgColumn,
+  boolean,
+  pgTable,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { id, isActive, timeStamps } from "../common";
 
 export const category = pgTable("category", {
@@ -7,6 +13,8 @@ export const category = pgTable("category", {
   description: text("description"),
   isActive,
   isPrimary: boolean("is_primary").notNull().default(false),
-  parentCategoryId: uuid("parent_category_id"),
+  parentCategoryId: uuid("parent_category_id").references(
+    (): AnyPgColumn => category.id,
+  ),
   ...timeStamps,
 });

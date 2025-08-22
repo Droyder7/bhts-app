@@ -43,6 +43,7 @@ export const auth = betterAuth({
     },
   },
   user: {
+    modelName: "users",
     additionalFields: {
       role: {
         type: "string",

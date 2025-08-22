@@ -3,7 +3,7 @@ import { ROLES } from "../../lib/types";
 
 export const roleEnum = pgEnum("role", ROLES);
 
-export const user = pgTable("user", {
+export const user = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
