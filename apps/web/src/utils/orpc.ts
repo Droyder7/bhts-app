@@ -5,6 +5,9 @@ import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { AppRouterClient } from "../../../server/src/routers/index";
 
+export const SERVER_URL =
+  import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,7 +33,7 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
-  url: `${import.meta.env.VITE_SERVER_URL}/rpc`,
+  url: `${SERVER_URL}/rpc`,
   fetch(url, options) {
     return fetch(url, {
       ...options,

@@ -6,6 +6,8 @@ import { ROLES } from "@/lib/types";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 
+export const PORT = Number(process.env.PORT || 3000);
+
 const rawOrigins = process.env.CORS_ORIGIN || "";
 export const origins = rawOrigins.includes(",")
   ? rawOrigins.split(",").map((o) => o.trim())
@@ -33,7 +35,7 @@ export const auth = betterAuth({
     }),
   ],
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: `http://localhost:${process.env.PORT}`,
+  baseURL: `http://localhost:${PORT}`,
   logger: {
     level: "debug",
     log: (level, message, ...args) => {

@@ -10,6 +10,7 @@ export default defineConfig({
     tailwindcss(),
     // Please make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
     tanstackStart({
+      target: "bun",
       customViteReactPlugin: true,
     }),
     viteReact(),
