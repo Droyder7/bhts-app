@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "type": "table",
+  "title": "Specialization",
+  "icon": "barChart2",
+  "hideInSidebar": false,
+  "config": {
+    "dataSource": "postgres_db_3p5haf",
+    "fetchStrategy": "databaseTable",
+    "table": "specialization",
+    "relationships": [
+      {
+        "key": "expert_specializations_by_specialization_id",
+        "hiddenInTable": false
+      },
+      {
+        "key": "specialization_categories_by_specialization_id",
+        "hiddenInTable": false
+      }
+    ]
+  }
+}
