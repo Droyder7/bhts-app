@@ -10,8 +10,6 @@ export async function createContext({ context }: CreateContextOptions) {
     headers: context.req.raw.headers,
   });
   return {
-    session,
+    auth: session,
   };
 }
-
-export type Context = Awaited<ReturnType<typeof createContext>>;

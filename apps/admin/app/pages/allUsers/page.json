@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "type": "table",
+  "title": "All Users",
+  "icon": "users",
+  "hideInSidebar": false,
+  "config": {
+    "dataSource": "postgres_db_3p5haf",
+    "fetchStrategy": "databaseTable",
+    "table": "users",
+    "allowInsert": false
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "type": "table",
+  "title": "Expert",
+  "icon": "briefcase",
+  "hideInSidebar": false,
+  "config": {
+    "dataSource": "postgres_db_3p5haf",
+    "fetchStrategy": "databaseTable",
+    "table": "expert",
+    "columns": [
+      {
+        "hiddenInForm": true,
+        "filterable": false,
+        "column": "user_id"
+      }
+    ],
+    "relationships": [
+      {
+        "key": "user",
+        "hiddenInTable": true
+      },
+      {
+        "key": "expert_specializations_by_expert_id",
+        "hiddenInTable": false
+      }
+    ]
+  }
+}

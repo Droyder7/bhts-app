@@ -1,0 +1,16 @@
+name: admin
+
+services:
+  app:
+    container_name: bhts-admin
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5480:5480"
+    env_file:
+      - .env
+    environment:
+      - PORT=5480
+      - VITE_DOCKER_MODE=true
+    restart: unless-stopped

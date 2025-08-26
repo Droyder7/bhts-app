@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "type": "table",
+  "title": "Customer",
+  "icon": "table",
+  "hideInSidebar": false,
+  "config": {
+    "dataSource": "postgres_db_3p5haf",
+    "fetchStrategy": "databaseTable",
+    "table": "customer",
+    "columns": [
+      {
+        "hiddenInForm": true,
+        "column": "id"
+      }
+    ]
+  }
+}

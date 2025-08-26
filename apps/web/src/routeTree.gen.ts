@@ -12,8 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicExpertsRouteImport } from './routes/_public/experts'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as ProtectedMemberRouteRouteImport } from './routes/_protected/member/route'
+import { Route as ProtectedAdminRouteRouteImport } from './routes/_protected/admin/route'
+import { Route as PublicCategoriesIndexRouteImport } from './routes/_public/categories/index'
+import { Route as ProtectedMemberIndexRouteImport } from './routes/_protected/member/index'
+import { Route as ProtectedAdminIndexRouteImport } from './routes/_protected/admin/index'
+import { Route as PublicCategoriesParentIdRouteImport } from './routes/_public/categories/$parentId'
 
 const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
   id: '/_protected',
@@ -28,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicExpertsRoute = PublicExpertsRouteImport.update({
+  id: '/_public/experts',
+  path: '/experts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -38,43 +50,121 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const ProtectedMemberRouteRoute = ProtectedMemberRouteRouteImport.update({
+  id: '/member',
+  path: '/member',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedAdminRouteRoute = ProtectedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const PublicCategoriesIndexRoute = PublicCategoriesIndexRouteImport.update({
+  id: '/_public/categories/',
+  path: '/categories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedMemberIndexRoute = ProtectedMemberIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedMemberRouteRoute,
+} as any)
+const ProtectedAdminIndexRoute = ProtectedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedAdminRouteRoute,
+} as any)
+const PublicCategoriesParentIdRoute =
+  PublicCategoriesParentIdRouteImport.update({
+    id: '/_public/categories/$parentId',
+    path: '/categories/$parentId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof ProtectedAdminRouteRouteWithChildren
+  '/member': typeof ProtectedMemberRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/experts': typeof PublicExpertsRoute
+  '/categories/$parentId': typeof PublicCategoriesParentIdRoute
+  '/admin/': typeof ProtectedAdminIndexRoute
+  '/member/': typeof ProtectedMemberIndexRoute
+  '/categories': typeof PublicCategoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/experts': typeof PublicExpertsRoute
+  '/categories/$parentId': typeof PublicCategoriesParentIdRoute
+  '/admin': typeof ProtectedAdminIndexRoute
+  '/member': typeof ProtectedMemberIndexRoute
+  '/categories': typeof PublicCategoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_protected': typeof ProtectedRouteRouteWithChildren
+  '/_protected/admin': typeof ProtectedAdminRouteRouteWithChildren
+  '/_protected/member': typeof ProtectedMemberRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_public/experts': typeof PublicExpertsRoute
+  '/_public/categories/$parentId': typeof PublicCategoriesParentIdRoute
+  '/_protected/admin/': typeof ProtectedAdminIndexRoute
+  '/_protected/member/': typeof ProtectedMemberIndexRoute
+  '/_public/categories/': typeof PublicCategoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/member'
+    | '/login'
+    | '/dashboard'
+    | '/experts'
+    | '/categories/$parentId'
+    | '/admin/'
+    | '/member/'
+    | '/categories'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/experts'
+    | '/categories/$parentId'
+    | '/admin'
+    | '/member'
+    | '/categories'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_protected'
+    | '/_protected/admin'
+    | '/_protected/member'
     | '/_auth/login'
     | '/_protected/dashboard'
+    | '/_public/experts'
+    | '/_public/categories/$parentId'
+    | '/_protected/admin/'
+    | '/_protected/member/'
+    | '/_public/categories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
+  PublicExpertsRoute: typeof PublicExpertsRoute
+  PublicCategoriesParentIdRoute: typeof PublicCategoriesParentIdRoute
+  PublicCategoriesIndexRoute: typeof PublicCategoriesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -100,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public/experts': {
+      id: '/_public/experts'
+      path: '/experts'
+      fullPath: '/experts'
+      preLoaderRoute: typeof PublicExpertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -113,6 +210,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_protected/member': {
+      id: '/_protected/member'
+      path: '/member'
+      fullPath: '/member'
+      preLoaderRoute: typeof ProtectedMemberRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/admin': {
+      id: '/_protected/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof ProtectedAdminRouteRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_public/categories/': {
+      id: '/_public/categories/'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof PublicCategoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_protected/member/': {
+      id: '/_protected/member/'
+      path: '/'
+      fullPath: '/member/'
+      preLoaderRoute: typeof ProtectedMemberIndexRouteImport
+      parentRoute: typeof ProtectedMemberRouteRoute
+    }
+    '/_protected/admin/': {
+      id: '/_protected/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof ProtectedAdminIndexRouteImport
+      parentRoute: typeof ProtectedAdminRouteRoute
+    }
+    '/_public/categories/$parentId': {
+      id: '/_public/categories/$parentId'
+      path: '/categories/$parentId'
+      fullPath: '/categories/$parentId'
+      preLoaderRoute: typeof PublicCategoriesParentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -129,11 +268,37 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
+interface ProtectedAdminRouteRouteChildren {
+  ProtectedAdminIndexRoute: typeof ProtectedAdminIndexRoute
+}
+
+const ProtectedAdminRouteRouteChildren: ProtectedAdminRouteRouteChildren = {
+  ProtectedAdminIndexRoute: ProtectedAdminIndexRoute,
+}
+
+const ProtectedAdminRouteRouteWithChildren =
+  ProtectedAdminRouteRoute._addFileChildren(ProtectedAdminRouteRouteChildren)
+
+interface ProtectedMemberRouteRouteChildren {
+  ProtectedMemberIndexRoute: typeof ProtectedMemberIndexRoute
+}
+
+const ProtectedMemberRouteRouteChildren: ProtectedMemberRouteRouteChildren = {
+  ProtectedMemberIndexRoute: ProtectedMemberIndexRoute,
+}
+
+const ProtectedMemberRouteRouteWithChildren =
+  ProtectedMemberRouteRoute._addFileChildren(ProtectedMemberRouteRouteChildren)
+
 interface ProtectedRouteRouteChildren {
+  ProtectedAdminRouteRoute: typeof ProtectedAdminRouteRouteWithChildren
+  ProtectedMemberRouteRoute: typeof ProtectedMemberRouteRouteWithChildren
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedAdminRouteRoute: ProtectedAdminRouteRouteWithChildren,
+  ProtectedMemberRouteRoute: ProtectedMemberRouteRouteWithChildren,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
 }
 
@@ -145,6 +310,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
+  PublicExpertsRoute: PublicExpertsRoute,
+  PublicCategoriesParentIdRoute: PublicCategoriesParentIdRoute,
+  PublicCategoriesIndexRoute: PublicCategoriesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

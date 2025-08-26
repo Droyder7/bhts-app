@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "type": "table",
+  "title": "Category",
+  "icon": "pieChart",
+  "hideInSidebar": false,
+  "config": {
+    "dataSource": "postgres_db_3p5haf",
+    "fetchStrategy": "databaseTable",
+    "table": "category"
+  }
+}
