@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { category, specializationCategories } from "@/db/schema";
@@ -269,3 +269,16 @@ export const categoryRouter = {
 };
 
 export type CategoryRouter = typeof categoryRouter;
+
+getTrendingCategory: Procedures.public.handler(async () => {
+  const trendingCategories = await db.query.category.findMany({
+    where: and(
+      isNotNull(category.parentCategoryId),
+      eq(category.isTrending, true),
+      eq(category.isActive, true),
+    ),
+    orderBy: desc(category.name),
+  });
+
+  return trendingCategories;
+});

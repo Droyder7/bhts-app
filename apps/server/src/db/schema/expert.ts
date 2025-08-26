@@ -1,5 +1,6 @@
 import { SQL, sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   decimal,
   index,
@@ -77,6 +78,9 @@ export const expert = pgTable(
     averageRating: decimal("average_rating", { precision: 3, scale: 2 }),
     lastLogin: timestamp("last_login"),
     ...timeStamps,
+    isMostSearchedExperts: boolean("is_most_searched_experts")
+      .notNull()
+      .default(false),
   },
   (table) => [
     index("experts_user_id_idx").on(table.userId),

@@ -16,5 +16,6 @@ export const category = pgTable("category", {
   parentCategoryId: uuid("parent_category_id").references(
     (): AnyPgColumn => category.id,
   ),
+  isTrending: boolean("is_trending").notNull().default(false),
   ...timeStamps,
 });

@@ -5,3 +5,4 @@ export * from "./expert";
 export * from "./junction-tables";
 export * from "./relations";
 export * from "./specialization";
+export * from "./testimonials";

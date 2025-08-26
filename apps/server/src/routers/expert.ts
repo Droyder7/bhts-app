@@ -724,3 +724,11 @@ export const expertRouter = {
 };
 
 export type ExpertRouter = typeof expertRouter;
+
+getMostSearchedExperts: Procedures.public.handler(async () => {
+  const mostSearchedExperts = await db.query.expert.findMany({
+    where: eq(expert.isMostSearchedExperts, true),
+    orderBy: desc(expert.createdAt),
+  });
+  return mostSearchedExperts;
+});
