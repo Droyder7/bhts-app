@@ -1,3 +1,4 @@
 node_modules
 .turbo
 .trae
+.DS_Store

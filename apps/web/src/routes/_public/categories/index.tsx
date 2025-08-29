@@ -1,14 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Loader from "@/components/loader";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { orpc } from "@/utils/orpc";
+import CategoryImg from "../../../../public/assets/category-img.png";
 
 export const Route = createFileRoute("/_public/categories/")({
   loader: ({ context: { queryClient } }) =>
@@ -79,68 +74,52 @@ function RouteComponent() {
   const categories = categoriesData || [];
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="font-bold text-3xl">Categories</h1>
-        <p className="mt-2 text-muted-foreground">
-          Explore all available categories ({categories.length} total)
-        </p>
+    <section className="bg-white">
+      <div className="bg-[#016E69] py-20">
+        <h1 className="container mx-auto font-bold text-6xl">
+          Healthcare & Medicine
+        </h1>
       </div>
+      <div className="container mx-auto max-w-6xl px-4 py-17">
+        <div className="flex flex-col items-center gap-4">
+          <h2 className="font-bold text-4xl text-black">
+            Healthcare & Medicine
+          </h2>
+          <p className="max-w-4xl text-center text-black text-lg">
+            Experience personalized solutions designed to meet your unique
+            needs. Our platform connects you with experts and resources that
+            drive success.
+          </p>
+        </div>
 
-      {categories.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <p className="text-muted-foreground">No categories found</p>
+        {categories.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-muted-foreground">No categories found</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {categories.map((category) => (
-            <Card
-              key={category.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-              onClick={() => handleCategoryClick(category)}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="truncate">{category.name}</span>
-                  {category.isPrimary && (
-                    <span className="rounded-full bg-primary px-2 py-1 font-medium text-primary-foreground text-xs">
-                      Primary
+        ) : (
+          <div className="grid gap-6 py-17 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {categories.map((category) => (
+              <Card
+                key={category.id}
+                className="cursor-pointer transition-shadow hover:shadow-md"
+                onClick={() => handleCategoryClick(category)}
+              >
+                <img src={CategoryImg} alt="" />
+                <CardHeader>
+                  <CardTitle>
+                    <span className="text-[#2D2D2D] text-xl">
+                      {category.name}
                     </span>
-                  )}
-                </CardTitle>
-                {category.description && (
-                  <CardDescription className="line-clamp-2">
-                    {category.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">Status:</span>
-                    <span
-                      className={`inline-flex items-center gap-1 font-medium ${
-                        category.isActive ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          category.isActive ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      />
-                      {category.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* {categoriesData?.pagination && (
+        {/* {categoriesData?.pagination && (
         <div className="mt-8 flex items-center justify-center">
           <div className="text-muted-foreground text-sm">
             Showing {categories.length} of {categoriesData.pagination.total}{" "}
@@ -155,6 +134,7 @@ function RouteComponent() {
           </div>
         </div>
       )} */}
-    </div>
+      </div>
+    </section>
   );
 }

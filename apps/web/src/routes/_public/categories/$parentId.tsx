@@ -3,14 +3,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { orpc } from "@/utils/orpc";
+import CategoryImg from "../../../../public/assets/category-img.png";
 
 export const Route = createFileRoute("/_public/categories/$parentId")({
   loader: ({ context: { queryClient }, params }) =>
@@ -86,110 +81,59 @@ function RouteComponent() {
   const categoryList = categories || [];
   const parentName = parentCategory?.name || "Unknown Category";
 
-  console.log(categoryList);
-
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-8">
-        <Button variant="ghost" asChild className="mb-4">
-          <Link to="/categories">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Categories
-          </Link>
-        </Button>
-        <h1 className="font-bold text-3xl">Categories under "{parentName}"</h1>
-        <p className="mt-2 text-muted-foreground">
-          {categoryList.length} subcategories found
-        </p>
-      </div>
+    <section className="bg-white">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        <div className="mb-8">
+          <Button variant="ghost" asChild className="mb-4 text-black">
+            <Link to="/categories">
+              <ArrowLeft className="mr-2 h-4 w-4 text-black" />
+              Back to Categories
+            </Link>
+          </Button>
+          <h1 className="font-bold text-3xl text-black">
+            Categories under "{parentName}"
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {categoryList.length} subcategories found
+          </p>
+        </div>
 
-      {categoryList.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <p className="text-muted-foreground">
-              No subcategories found for this category
-            </p>
+        {categoryList.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-muted-foreground">
+                No subcategories found for this category
+              </p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {categoryList.map((category) => (
-            <Card
-              key={category.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-              onClick={() => {
-                // If this category has a parent, navigate to show its siblings
-                navigate({
-                  to: "/experts",
-                  search: { category: category.id },
-                });
-              }}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="truncate">{category.name}</span>
-                  {category.isPrimary && (
-                    <span className="rounded-full bg-primary px-2 py-1 font-medium text-primary-foreground text-xs">
-                      Primary
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {categoryList.map((category) => (
+              <Card
+                key={category.id}
+                className="cursor-pointer transition-shadow hover:shadow-md"
+                onClick={() => {
+                  // If this category has a parent, navigate to show its siblings
+                  navigate({
+                    to: "/experts",
+                    search: { category: category.id },
+                  });
+                }}
+              >
+                <img src={CategoryImg} alt="category-img" />
+                <CardHeader>
+                  <CardTitle>
+                    <span className="text-[#2D2D2D] text-xl">
+                      {category.name}
                     </span>
-                  )}
-                </CardTitle>
-                {category.description && (
-                  <CardDescription className="line-clamp-2">
-                    {category.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">
-                    {category.specializations?.length
-                      ? category.specializations
-                          .map((specialization) => specialization.name)
-                          .join(", ")
-                      : "No specializations"}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {category.parent && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">Parent:</span>
-                      <span className="font-medium">
-                        {category.parent.name}
-                      </span>
-                    </div>
-                  )}
-                  {category.children && category.children.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-muted-foreground">
-                        Subcategories:
-                      </span>
-                      <span className="font-medium">
-                        {category.children.length}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">Status:</span>
-                    <span
-                      className={`inline-flex items-center gap-1 font-medium ${
-                        category.isActive ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          category.isActive ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      />
-                      {category.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
