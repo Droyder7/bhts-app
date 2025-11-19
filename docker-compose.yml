@@ -4,7 +4,8 @@ services:
   server:
     build:
       context: .
-      dockerfile: apps/server/Dockerfile
+      dockerfile: Dockerfile
+      target: server
     container_name: bhts-server
     env_file:
       - ./apps/server/.env
@@ -17,7 +18,8 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: Dockerfile
+      target: web
     container_name: bhts-web
     depends_on:
       - server
